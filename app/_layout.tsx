@@ -1,39 +1,57 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { tokenCache } from '@/cache';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import { Slot, Stack } from 'expo-router';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
+import '@/global.css';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+  if (!publishableKey) {
+    throw new Error('Add EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env');
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+      <ClerkLoadedComponent />
+    </ClerkProvider>
+  );
+}
+
+function ClerkLoadedComponent() {
+  const { isLoaded } = useAuth();
+
+  if (!isLoaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <ActivityIndicator size="large" color="#FF4458" />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <StatusBar barStyle='dark-content' />
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name='index' options={{
+          headerShown: false,
+          title: 'Home'
+        }}/>
+        <Stack.Screen name='chat' options={{
+          title: 'Chat',
+          headerBackTitle: 'Back' ,
+          headerTransparent: true,
+          headerTintColor: '#FF4458',
+          headerTitleStyle:{color: 'black'}
+        }}/>
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </>
   );
 }
