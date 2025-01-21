@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform, Image } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth, useSignIn } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import Svg, { Path } from 'react-native-svg';
+import tinder_logo from '@/assets/images/tinder-logo-full.png';
 
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
@@ -95,16 +96,14 @@ export default function SignInPage() {
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       {/* Header */}
       <View style={{ flex: 1, alignItems: 'center', paddingTop: 80 }}>
-        <Text style={{ fontSize: 48, color: '#FF4458', fontWeight: 'bold' }}>❤️</Text>
-        <Text style={{ fontSize: 32, fontWeight: 'bold', marginTop: 16, color: '#FF4458' }}>
-          tinder
-        </Text>
+        <Image source={tinder_logo}
+        className='h-20 w-full ' resizeMode='contain'  />
       </View>
 
       {/* Welcome Text */}
-      <View style={{ flex: 1, paddingHorizontal: 32, justifyContent: 'center' }}>
+      <View style={{ flex: 1, paddingHorizontal: 32 }}>
         <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center', color: '#333333' }}>
-          Swipe Right®
+          Swipe.Talk.Date.
         </Text>
         <Text style={{ fontSize: 18, textAlign: 'center', marginTop: 16, color: '#666666' }}>
           Create an account to find your perfect match

@@ -1,8 +1,9 @@
 import { tokenCache } from '@/cache';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { Slot, Stack } from 'expo-router';
-import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import '@/global.css';
+import { StatusBar } from 'expo-status-bar';
 
 export default function RootLayout() {
   const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
@@ -38,7 +39,6 @@ function ClerkLoadedComponent() {
 
   return (
     <>
-      <StatusBar barStyle='dark-content' />
       <Stack>
         <Stack.Screen name='index' options={{
           headerShown: false,
@@ -46,12 +46,29 @@ function ClerkLoadedComponent() {
         }}/>
         <Stack.Screen name='chat' options={{
           title: 'Chat',
-          headerBackTitle: 'Back' ,
-          headerTransparent: true,
-          headerTintColor: '#FF4458',
-          headerTitleStyle:{color: 'black'}
+          headerShown: false
+        }}/>
+        <Stack.Screen name='ModalScreen' options={{
+          presentation: 'modal',
+          title: 'Modal Screen',
+          headerShown: false
+        }}/>
+        <Stack.Screen name='MatchScreen' options={{
+          presentation: 'transparentModal',
+          title: 'Match Screen',
+          headerShown: false
+        }} />
+        <Stack.Screen name='(auth)' options={{
+          headerShown: false
+        }} />
+        <Stack.Screen name='MessageScreen'
+        options={{
+          title: 'Message Screen',
+          headerShown: false 
         }}/>
       </Stack>
+      
+      
     </>
   );
 }
