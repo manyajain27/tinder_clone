@@ -23,7 +23,7 @@ const MessageScreen = () => {
     const params = useLocalSearchParams();
     const matchDetails = params.matchDetails ? JSON.parse(params.matchDetails as string) : null;
     const [input, setInput] = useState('');
-    
+    const [inputHeight, setInputHeight] = useState(40);
     
     const [messages, setMessages] = useState<Message[]>([]);
     // console.log(matchDetails)
@@ -48,22 +48,24 @@ const MessageScreen = () => {
     },[matchDetails?.id])
 
     const sendMessage = () => {
-        if (user?.id) {
-            addDoc(collection(db, 'matches', matchDetails.id, 'messages' ),{
-                timeStamp: serverTimestamp(),
-                userId: user.id,
-                displayName: user.fullName,
-                photoURL: matchDetails.users[user.id].photoURL,
-                message: input                  
-            })
-        }
-
-        setInput('')
-    }
+        const trimmedInput = input.trim();
+        
+        if (!trimmedInput || !user?.id) return; // Don't send if message is empty or no user
+    
+        addDoc(collection(db, 'matches', matchDetails.id, 'messages' ), {
+            timeStamp: serverTimestamp(),
+            userId: user.id,
+            displayName: user.fullName,
+            photoURL: matchDetails.users[user.id].photoURL,
+            message: trimmedInput                  
+        });
+        
+        setInput('');
+    };
 
   return (
     <SafeAreaView className='flex-1'>
-      <Header matchDetails={matchDetails} profileEnabled={true} 
+      <Header matchDetails={matchDetails} profileEnabled={true} headerBorder={true}
       title={getMatchedUserInfo(matchDetails.users,user?.id).displayName} callEnabled/>
       <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -92,13 +94,24 @@ const MessageScreen = () => {
         className='flex flex-row items-center justify-between 
         border-t border-gray-200 px-5 py-2'
         >
-            <TextInput 
-            className='h-10 text-lg w-full relative'
+            <TextInput
+            className='text-lg w-full relative'
             placeholder='Send message...'
+            placeholderTextColor={'#A0AEC0'}
             onChangeText={setInput}
-            onSubmitEditing={sendMessage}
+            onContentSizeChange={(event) => 
+            setInputHeight(event.nativeEvent.contentSize.height) // Adjust height dynamically
+            }
             value={input}
-            />
+            multiline={true} // Enable multiline input
+            style={{
+            height: Math.min(inputHeight, 120), // Limit max height to 120 for usability
+            maxHeight: 120,
+            maxWidth: '83%', // Limit width to 90% for usability
+            minHeight: 40, // Default height
+            textAlignVertical: 'top', // Ensures text starts at the top
+            }}
+        />
             <View className='absolute right-5'>
                 <Button onPress={sendMessage} title='Send' color={'#ff5864'} />
             </View>
@@ -109,5 +122,4 @@ const MessageScreen = () => {
     </SafeAreaView>
   )
 }
-
 export default MessageScreen

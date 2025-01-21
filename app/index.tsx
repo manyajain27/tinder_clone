@@ -12,7 +12,8 @@ import {DUMMY_DATA} from '@/dummy_data'
 import { collection, doc, DocumentSnapshot, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { db } from '@/firebaseConfig';
 import generatedId from '@/lib/utils/generatedId';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 
 interface Profile {
@@ -30,6 +31,7 @@ export default function Index() {
   const { user } = useUser();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const swipeRef = useRef<Swiper<any>>(null);  
+  const [noCards, setNoCards] = useState(false);
 
   useLayoutEffect(()=>{
     if(!user) return;
@@ -42,6 +44,7 @@ export default function Index() {
     })
     return () => unsubscribe();
   },[user])
+
 
   useEffect(()=>{
     let unsubscribe;
@@ -61,21 +64,24 @@ export default function Index() {
       unsubscribe = onSnapshot(
         query(collection(db,'users'), where('id','not-in',[...passedUserIds, ...LikedUserIds])),
         (snapshot) => {
-        setProfiles(
-          snapshot.docs
+          const filteredProfiles = snapshot.docs
           .filter(doc => doc.id !== user.id)
           .map(doc => ({
             id: doc.id,
             ...doc.data()
-          })) as Profile[]
-        )
-      })
-    }
-    
-    fetchProfiles();
-    return unsubscribe;
+          })) as Profile[];
+        
+        setProfiles(filteredProfiles);
+        // Set noCards state based on filtered profiles length
+        setNoCards(filteredProfiles.length === 0);
+      }
+    );
+  };
+  
+  fetchProfiles();
+  return unsubscribe;
+}, [user]);
 
-  },[])
 
   const swipeLeft = async(cardIndex: any) => {
     if(!user) return;
@@ -84,8 +90,10 @@ export default function Index() {
     const userSwiped = profiles[cardIndex];
     console.log(`you swiped pass on ${userSwiped.displayName}`);
 
-    setDoc(doc(db, 'users', user?.id, 'passes', userSwiped.id ),
+    await setDoc(doc(db, 'users', user?.id, 'passes', userSwiped.id ),
     userSwiped);
+
+
   };
 
   const swipeRight = async(cardIndex: any) => {
@@ -97,6 +105,7 @@ export default function Index() {
       await getDoc(doc(db, 'users', user.id))
     ).data();
 
+   
 
     // to check if the user swiped right on you
     getDoc(doc(db, 'users', userSwiped.id, 'likes', user.id)).then(
@@ -167,7 +176,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <StatusBar style='dark' />
+      <StatusBar barStyle={'dark-content'} />
       {/* signed out */}
 
       <SignedOut>
@@ -225,91 +234,104 @@ export default function Index() {
         </View>
         {/* end header */}
 
-        {/* cards */}
-        <View className='flex-1 -mt-6'>
-        <Swiper 
-        ref={swipeRef}
-        onSwipedAll={()=>console.log('swiped all')}
-        cards={profiles}
-        renderCard={(card)=> card? (
-          <View key={card.id} className='bg-white h-3/4 rounded-xl relative'>
-            <Image source={{uri: card.photoURL}} className='h-full w-full rounded-xl absolute top-0' resizeMode='cover' />
-
-            <View className='bg-white w-full h-20 
-            absolute bottom-0 flex-row justify-between items-center
-             px-6 py-2 rounded-b-xl' style={styles.cardShadow}>
-              <View>
-                <Text className='text-xl font-bold'> {card.displayName}</Text>
-                <Text> {card.job} </Text>
-              </View>
-              <Text className='text-xl font-bold'> {card.age} </Text>
+             {/* cards */}
+      <View className='flex-1 -mt-6'>
+        {noCards ? (
+          // Empty state container with same dimensions as Swiper card
+          <View className='flex-1 justify-center items-center'>
+            <View className='bg-white h-[63vh] w-[85vw] rounded-xl justify-center items-center' style={styles.cardShadow}>
+              <Text className='font-bold pb-5 text-xl'>No more Profiles :( </Text>
+              <Image
+                width={100}
+                height={100}
+                source={{uri: 'https://links.papareact.com/6gb'}}
+              />
             </View>
-
-
           </View>
-          
         ) : (
-
-          <View className='relative bg-white h-3/4 rounded-xl justify-center items-center' style={styles.cardShadow}>
-            <Text className='font-bold pb-5'>No more Profiles :( </Text>
-            <Image
-            width={100}
-            height={100}
-            source={{uri: 'https://links.papareact.com/6gb'}}
-            />
-          </View>
-
-        )
-      
-      }
-        containerStyle={{backgroundColor: 'transparent'}}
-        stackSize={5}
-        cardIndex={0}
-        stackSeparation={12}
-        onSwipedLeft={(cardIndex)=>{
-          console.log(`${user?.fullName} swiped PASS`);;
-          swipeLeft(cardIndex);
-        }}
-        onSwipedRight={(cardIndex)=>{
-          console.log(`${user?.fullName} swiped LIKE`);
-          swipeRight(cardIndex);
-        }}
-        animateCardOpacity={true}
-        verticalSwipe={false}
-        overlayLabels={{
-          left:{
-            title: 'NOPE',
-            style:{
-              label :{
-                textAlign: 'right',
-                color: 'red'
+          // Swiper with cards
+          <Swiper 
+            ref={swipeRef}
+            cards={profiles}
+            renderCard={(card) => {
+              if (!card) return null;
+              return (
+                <View className='flex-1 items-center'>
+                  <View key={card.id} className=' bg-white h-[63vh] w-[85vw] rounded-xl relative'>
+                    <Image 
+                      source={{uri: card.photoURL}} 
+                      className='h-full w-full rounded-xl absolute top-0' 
+                      resizeMode='cover' 
+                    />
+                    <View className='bg-white w-full h-20 absolute bottom-0 flex-row justify-between items-center px-6 py-2 rounded-b-xl' style={styles.cardShadow}>
+                      <View>
+                        <Text className='text-xl font-bold'> {card.displayName}</Text>
+                        <Text> {card.job} </Text>
+                      </View>
+                      <Text className='text-xl font-bold'> {card.age} </Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            }}
+            containerStyle={{backgroundColor: 'transparent'}}
+            stackSize={5}
+            cardIndex={0}
+            stackSeparation={12}
+            onSwipedLeft={swipeLeft}
+            onSwipedRight={swipeRight}
+            onSwipedAll={() => {
+              console.log('All cards swiped');
+              setNoCards(true);
+            }}
+            animateCardOpacity={true}
+            verticalSwipe={false}
+            overlayLabels={{
+              left: {
+                title: 'NOPE',
+                style: {
+                  label: {
+                    textAlign: 'right',
+                    color: 'red'
+                  }
+                }
+              },
+              right: {
+                title: 'LIKE',
+                style: {
+                  label: {
+                    textAlign: 'left',
+                    color: 'green'
+                  }
+                }
               }
-            }
-          },
-          right:{
-            title: 'LIKE',
-            style:{
-              label :{
-                textAlign: 'left',
-                color: 'green'
-              }
-            }
-          }
-        }}
-        />
+            }}
+          />
+        )}
       </View>
-
         {/* end cards */}
 
         <View className='z-10 flex flex-row justify-evenly mb-5'>
           <TouchableOpacity
-          onPress={()=>swipeRef.current?.swipeLeft()}
+          onPress={()=>{
+            if(profiles.length === 0){
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              return;
+            }
+            swipeRef.current?.swipeLeft();
+          }}
           className='items-center justify-center rounded-full
           w-16 h-16 bg-red-200'>
             <Entypo name='cross' size={40} color='red'/>
           </TouchableOpacity>
           <TouchableOpacity 
-          onPress={()=>swipeRef.current?.swipeRight()}
+          onPress={()=>{
+            if(profiles.length === 0){
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+              return;
+            }
+            swipeRef.current?.swipeRight()}}
           className='items-center justify-center rounded-full
           w-16 h-16 bg-green-200'>
             <Entypo name='heart' size={40} color='green'/>

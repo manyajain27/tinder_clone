@@ -10,16 +10,17 @@ interface HeaderProps {
   callEnabled: boolean;
   profileEnabled: boolean;
   matchDetails? : any;
+  headerBorder?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, callEnabled, profileEnabled, matchDetails }) => {
+const Header: React.FC<HeaderProps> = ({ title, callEnabled, profileEnabled, matchDetails, headerBorder }) => {
     const {user} = useUser();
 
     // console.log(matchDetails)
 
   return (
     <View className='p-2 flex flex-row items-center justify-between'
-    style={{borderBottomWidth:1/2, borderBottomColor:'gray'}}
+    style={{ borderBottomWidth: headerBorder? 1 : 0, borderBottomColor: 'gray'}}
     >
       <View className='flex flex-row items-center'>
         <TouchableOpacity

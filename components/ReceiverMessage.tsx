@@ -11,70 +11,75 @@ interface Message {
 }
 
 const ReceiverMessage = ({ message }: { message: Message }) => {
-    const formatTime = (timestamp: any): string => {
-        if (!timestamp) return '';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-        return date.toLocaleTimeString([], { 
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+  const formatTime = (timestamp: any): string => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
 
   return (
-    <View className="flex flex-row items-center justify-start">
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "flex-start",
+        marginVertical: 1, // Reduced vertical spacing
+        marginHorizontal: 8, // Reduced horizontal spacing
+      }}
+    >
+      {/* User Profile Image */}
       <Image
-        className="h-12 w-12 rounded-full"
+        style={{
+          height: 36,
+          width: 36,
+          borderRadius: 18, // Makes it circular
+          marginRight: 8, // Reduced spacing
+        }}
         source={{
           uri: message.photoURL,
         }}
       />
 
+      {/* Message Bubble */}
       <View
         style={{
-          backgroundColor: "#6B46C1", // Equivalent to bg-purple-600
-          borderRadius: 10, // Rounded corners
-          borderTopRightRadius: 0, // Rounded-tr-none
-          paddingHorizontal: 12, // px-5
-          paddingVertical: 6, // py-3
-          marginHorizontal: 12, // mx-3
-          marginVertical: 3, // my-2
-          alignSelf: "flex-start",
-          flexDirection: "row",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          justifyContent: "flex-end",
-          maxWidth: "80%",
-           // ml-auto
+          backgroundColor: "#6B46C1", // Purple bubble color
+          borderRadius: 12,
+          borderTopLeftRadius: 0, // Matches WhatsApp-style bubble
+          paddingHorizontal: 10, // Reduced padding
+          paddingVertical: 6, // Reduced padding
+          maxWidth: "75%", // Slightly smaller bubble width
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 1, // Subtle shadow for Android
         }}
       >
+        {/* Message Text */}
         <Text
-        className=""
           style={{
             color: "white",
             fontWeight: "500",
-            marginRight: 10,
-            marginBottom: 7,
-            marginTop: 2,
-            fontSize: 16
+            fontSize: 16, // Reduced font size
+            marginBottom: 3, // Reduced spacing
           }}
         >
           {message.message}
         </Text>
-        <View
+
+        {/* Timestamp */}
+        <Text
           style={{
-            position: "relative",
-            bottom: -2,
+            color: "#D1D1D1",
+            fontSize: 10, // Smaller timestamp font
+            textAlign: "right",
           }}
         >
-          <Text
-            style={{
-              color: "#9E9E9E",
-              fontSize: 10,
-            }}
-          >
-            {formatTime(message.timeStamp)}
-          </Text>
-        </View>
+          {formatTime(message.timeStamp)}
+        </Text>
       </View>
     </View>
   );

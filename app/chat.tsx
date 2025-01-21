@@ -8,7 +8,7 @@ const Chat = () => {
   return (
     <SafeAreaView className=''>
       <View className='mx-3'>
-        <Header profileEnabled={false} title='Chat' callEnabled={false} />
+        <Header headerBorder={false} profileEnabled={false} title='Chat' callEnabled={false} />
         <ChatList/>
       </View>
         

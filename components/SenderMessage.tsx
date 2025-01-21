@@ -15,52 +15,49 @@ const SenderMessage = ({ message }: { message: Message }) => {
         if (!timestamp) return '';
         const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
         return date.toLocaleTimeString([], { 
-            hour: '2-digit',
-            minute: '2-digit'
+            hour: '2-digit', 
+            minute: '2-digit' 
         });
     };
 
     return (
         <View
             style={{
-                backgroundColor: 'black',
-                borderRadius: 10,
+                backgroundColor: '#1F2937', // Darker shade for better contrast
+                borderRadius: 12,
                 borderTopRightRadius: 0,
-                paddingHorizontal: 12,
+                paddingHorizontal: 10, // Compact padding
                 paddingVertical: 6,
-                marginHorizontal: 12,
-                marginVertical: 2,
+                marginHorizontal: 8, // Reduced spacing
+                marginVertical: 1,
                 alignSelf: 'flex-end',
-                maxWidth: '80%',
+                maxWidth: '75%', // Adjusted for a slightly smaller bubble
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2, // Subtle shadow for Android
             }}
         >
-            <View style={{ 
-                flexDirection: 'row', 
-                flexWrap: 'wrap',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end'
-            }}>
-                <Text style={{ 
+            <Text
+                style={{
                     color: 'white',
-                    marginRight: 10,
-                    marginBottom: 7,
                     fontWeight: '500',
-                    fontSize: 16
-                }}>
-                    {message.message}
-                </Text>
-                <View style={{
-                    position: 'relative',
-                    bottom: -2,
-                }}>
-                    <Text style={{ 
-                        color: '#9E9E9E',
-                        fontSize: 10,
-                    }}>
-                        {formatTime(message.timeStamp)}
-                    </Text>
-                </View>
-            </View>
+                    fontSize: 16, // Reduced font size for compactness
+                    marginBottom: 4, // Spacing between message and timestamp
+                }}
+            >
+                {message.message}
+            </Text>
+            <Text
+                style={{
+                    color: '#9E9E9E',
+                    fontSize: 10, // Smaller timestamp font size
+                    textAlign: 'right', // Align timestamp to the bottom-right
+                }}
+            >
+                {formatTime(message.timeStamp)}
+            </Text>
         </View>
     );
 };

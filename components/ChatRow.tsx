@@ -3,9 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { useUser } from '@clerk/clerk-expo'
 import getMatchedUserInfo from '@/lib/utils/getMatchedUserInfo'
 import { router } from 'expo-router';
+import { db } from '@/firebaseConfig';
+import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
 
 interface MatchDetails {
     users: Record<string, any>;
+    id: string;
 }
 
 interface MatchedUserInfo {
@@ -15,6 +18,7 @@ interface MatchedUserInfo {
 
 const ChatRow = ({matchDetails}: { matchDetails: MatchDetails }) => {
     const [matchedUserInfo, setMatchedUserInfo] = useState<MatchedUserInfo | null>(null);
+    const [lastMessage, setLastMessage] = useState<string>('');
     const {user} = useUser();
 
     useEffect(() => {
@@ -25,8 +29,20 @@ const ChatRow = ({matchDetails}: { matchDetails: MatchDetails }) => {
     },[matchDetails,user]);
 
     useEffect(() => {
-        // 
-    }, []);
+
+        const unsubscribe = onSnapshot(
+            query( collection(db, 'matches', matchDetails.id, 'messages'),
+            orderBy('timeStamp', 'desc'),
+            limit(1)
+            ),
+
+            (snapshot) => {
+                setLastMessage(snapshot.docs[0]?.data()?.message)
+            }
+        )
+
+        return unsubscribe;
+    }, [matchDetails?.id, db]);
 
 
   return (
@@ -49,7 +65,7 @@ const ChatRow = ({matchDetails}: { matchDetails: MatchDetails }) => {
         />
         <View className=''>
             <Text className='text-lg font-bold'>{matchedUserInfo?.displayName}</Text>
-            <Text>Say Hi! 👋</Text>
+            <Text>{lastMessage || "Say Hi! 👋"}</Text>
         </View>
     </TouchableOpacity>
   )

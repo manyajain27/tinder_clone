@@ -47,8 +47,8 @@ const ChatList = () => {
         />
     )
     : (
-        <View className='p-5'>
-            <Text className='text-center text-lg'>No matches yet 😢</Text>
+        <View className=' p-5'>
+            <Text className='text-lg text-center font-bold' style={{marginTop: 300 }} >No matches yet 😢</Text>
         </View>
     )
   )

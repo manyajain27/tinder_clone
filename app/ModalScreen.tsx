@@ -101,7 +101,7 @@ const ModalScreen = () => {
       };
 
       await setDoc(doc(db, "users", user.id), userProfile);
-      router.replace('/');
+      router.back();
     } catch (error: any) {
       console.error('Error updating profile:', error);
       alert('Error updating profile: ' + error.message);
